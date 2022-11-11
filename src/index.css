@@ -1,0 +1,42 @@
+.error {
+    color: rgb(255, 0, 0);
+    background: rgb(255, 255, 255);
+    font-size: 20px;
+    border-style: solid;
+    border-radius: 15px;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+.success {
+color: rgb(27, 231, 0);
+background: rgb(255, 255, 255);
+font-size: 20px;
+border-style: solid;
+border-radius: 15px;
+padding: 10px;
+margin-bottom: 10px;
+}
+
+.likes {
+  color: rgb(255, 255, 255);
+  background: rgb(63, 167, 44);
+  border-radius: 15px;
+  padding: 7px;
+  font-size: 15px;
+  font-family: Georgia, serif;
+  border-style: none;
+}
+
+h1 {
+  color: rgb(22, 62, 117);
+  font-size: 35px;
+}
+ .view {  color: rgb(0, 0, 0);
+  background: rgb(188, 254, 177);
+  border-radius: 15px;
+  padding: 7px;
+  font-size: 15px;
+  font-family: Georgia, serif;
+  border-style: none;
+}
