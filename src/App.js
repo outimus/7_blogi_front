@@ -6,7 +6,7 @@ import LoginForm from './components/LoginForm'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
-/*import { setUser } from './reducers/userReducer'*/
+import { setUser } from './reducers/userReducer'
 import { setNotification } from './reducers/notificationReducer'
 import { createBlog, setBlogs } from './reducers/blogsReducer'
 import { useDispatch, useSelector } from 'react-redux'
@@ -16,16 +16,24 @@ import { useDispatch, useSelector } from 'react-redux'
 const App = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [user, setUser] = useState(null)
 
   const dispatch = useDispatch()
   const blogs = useSelector(state => state.blogs)
+  const user = useSelector(state => state.user)
+
+  useEffect(() => {
+    blogService
+      .getAll()
+      .then(blogs => {
+        dispatch(setBlogs(blogs))
+      })
+  }, [])
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedAppUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
-      setUser(user)
+      dispatch(setUser(user))
       blogService.setToken(user.token)
     }
   }, [])
@@ -42,6 +50,7 @@ const App = () => {
       )
       blogService.setToken(user.token)
       dispatch(setUser(user))
+      dispatch(setNotification(`${user.name} is successfully logged in!`, 5))
       setUsername('')
       setPassword('')
     } catch (exception) {
@@ -52,28 +61,29 @@ const App = () => {
   const handleLogout = async (event) => {
     event.preventDefault()
     window.localStorage.removeItem('loggedAppUser')
+    dispatch(setUser(null))
     setUser('')
   }
 
   const handleRemove = (blogObject) => {
     if (window.confirm(`Are you sure you want to remove ${blogObject.blog.title} by author ${blogObject.blog.author}?`)) {
       const filtered = blogs.filter(blog => blog.id !== blogObject.blog.id)
+      blogService.deleteBlog(blogObject.blog.id)
       dispatch(setBlogs(filtered))
       setUser('')
       dispatch(setNotification(`A blog ${blogObject.blog.title} by author ${blogObject.blog.author} was removed`, 5))}
   }
 
+  //MITEN REMOVEBUTTONNIN SAA NÄKYMÄÄN VAIN KIRJAUTUNEELLE KÄYTTÄJÄLLE?
   const RemoveButton = (blogObject) => {
-    const loggedIn = localStorage.getItem('loggedAppUser')
-    if (loggedIn === blogObject.blog.userId) {
-      return (
-        <button id="remove-button" onClick={() => handleRemove(blogObject)}> remove </button>
-      )
-    }
+    return (
+      <button id="remove-button" onClick={() => handleRemove(blogObject)}> remove </button>
+    )
   }
 
   const addBlog = (blogObject) => {
     blogFormRef.current.toggleVisibility()
+    blogService.create(blogObject)
     dispatch(createBlog(blogObject))
     dispatch(setNotification(`A new blog by author ${blogObject.author} was added`, 5))
   }

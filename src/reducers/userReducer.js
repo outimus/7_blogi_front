@@ -5,7 +5,7 @@ const userSlice = createSlice({
   initialState: null,
   reducers: {
     storeLoggedInUser(state, action) {
-      console.log('STATE JA ACTION ', state, action)
+      console.log('ACTION: ', action)
       state = action.payload
       return state
     }
@@ -16,7 +16,6 @@ export const { storeLoggedInUser } = userSlice.actions
 
 // asynkroniset action creatorit
 export const setUser = (user) => {
-  console.log('USERI ON ',user)
   return async dispatch => {
     dispatch(storeLoggedInUser(user))
   }
