@@ -17,15 +17,15 @@ const BlogForm = ({ createBlog }) => {
     setNewUrl(event.target.value)
   }
 
-  // userId on localStorageen tallennetun käyttäjän id
   const addBlog = (event) => {
     event.preventDefault()
+    const loggedIn = localStorage.getItem('loggedAppUser')
 
     createBlog({
       title: newTitle,
       author: newAuthor,
       url: newUrl,
-      userId: '634814c80f5618a4d39f0c86',
+      userId: loggedIn
     })
     setNewTitle('')
     setNewAuthor('')

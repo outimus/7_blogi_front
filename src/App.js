@@ -5,27 +5,21 @@ import loginService from './services/login'
 import LoginForm from './components/LoginForm'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
-import axios from 'axios'
 import Notification from './components/Notification'
+/*import { setUser } from './reducers/userReducer'*/
 import { setNotification } from './reducers/notificationReducer'
-import { useDispatch } from 'react-redux'
-const url = 'http://localhost:3003/api/blogs/'
+import { createBlog, setBlogs } from './reducers/blogsReducer'
+import { useDispatch, useSelector } from 'react-redux'
+
+/*const url = 'http://localhost:3003/api/blogs/'*/
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [user, setUser] = useState(null)
 
   const dispatch = useDispatch()
-
-  useEffect(() => {
-    blogService
-      .getAll()
-      .then(blogs => {
-        setBlogs( blogs )
-      })
-  }, [])
+  const blogs = useSelector(state => state.blogs)
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedAppUser')
@@ -47,7 +41,7 @@ const App = () => {
         'loggedAppUser', JSON.stringify(user)
       )
       blogService.setToken(user.token)
-      setUser(user)
+      dispatch(setUser(user))
       setUsername('')
       setPassword('')
     } catch (exception) {
@@ -63,16 +57,15 @@ const App = () => {
 
   const handleRemove = (blogObject) => {
     if (window.confirm(`Are you sure you want to remove ${blogObject.blog.title} by author ${blogObject.blog.author}?`)) {
-      axios.delete(url + blogObject.blog.id)
       const filtered = blogs.filter(blog => blog.id !== blogObject.blog.id)
-      setBlogs(filtered)
-      setUser('')}
+      dispatch(setBlogs(filtered))
+      setUser('')
+      dispatch(setNotification(`A blog ${blogObject.blog.title} by author ${blogObject.blog.author} was removed`, 5))}
   }
 
   const RemoveButton = (blogObject) => {
-    console.log(blogObject)
-    const whoAddedTheBlog = blogObject.blog.user.name
-    if (whoAddedTheBlog === user.name) {
+    const loggedIn = localStorage.getItem('loggedAppUser')
+    if (loggedIn === blogObject.blog.userId) {
       return (
         <button id="remove-button" onClick={() => handleRemove(blogObject)}> remove </button>
       )
@@ -81,11 +74,7 @@ const App = () => {
 
   const addBlog = (blogObject) => {
     blogFormRef.current.toggleVisibility()
-    blogService
-      .create(blogObject)
-      .then(returnedBlog => {
-        setBlogs(blogs.concat(returnedBlog))
-      })
+    dispatch(createBlog(blogObject))
     dispatch(setNotification(`A new blog by author ${blogObject.author} was added`, 5))
   }
 
@@ -94,9 +83,8 @@ const App = () => {
     const blog = blogs.find(b => b.id === id)
     const addLikes = blog.likes + 1
     const updatedInfo = { ...blog, likes: addLikes }
-    blogService
-      .update(id, updatedInfo)
-    setBlogs(blogs.map(blog => blog.id !== id ? blog : updatedInfo))
+    dispatch(setBlogs(blogs.map(blog => blog.id !== id ? blog : updatedInfo)))
+    dispatch(setNotification(`You liked a blog by author ${blogObject.author}`, 5))
   }
 
   const blogFormRef = useRef()
@@ -129,6 +117,7 @@ const App = () => {
       <p>{user.name} logged in  <button onClick={handleLogout}>logout</button></p>
       <h2>create new</h2>
       <Notification />
+      <p></p>
       <Togglable buttonLabel='new blog' ref={blogFormRef}>
         <BlogForm createBlog={addBlog}/>
       </Togglable>
