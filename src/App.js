@@ -1,17 +1,121 @@
 import { useState, useEffect, useRef } from 'react'
-import Blog from './components/Blog'
+
 import blogService from './services/blogs'
 import loginService from './services/login'
+import userService from './services/users'
+
+import Blog from './components/Blog'
 import LoginForm from './components/LoginForm'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
 import Notification from './components/Notification'
-import { setUser } from './reducers/userReducer'
+
+import { setUser, setAllUsers } from './reducers/userReducer'
 import { setNotification } from './reducers/notificationReducer'
 import { createBlog, setBlogs } from './reducers/blogsReducer'
+
 import { useDispatch, useSelector } from 'react-redux'
+import {
+  BrowserRouter as Router,
+  Routes, Route, Link, useParams,
+} from 'react-router-dom'
+/*import { useField, useReset } from './hooks'*/
 
 /*const url = 'http://localhost:3003/api/blogs/'*/
+
+const Menu = (props) => {
+  const padding = {
+    paddingRight: 5
+  }
+  return (
+    <Router>
+      <div>
+        <p></p>
+        <Link style={padding} to='/'>blogs</Link>
+        <Link style={padding} to='/users'>users</Link>
+      </div>
+      <Routes>
+        <Route path='/' element={<Home
+          blogFormRef={props.blogFormRef}
+          addBlog={props.addBlog}
+          sortedBlogs={props.sortedBlogs}
+          handleLike={props.handleLike}
+          removeButton={props.removeButton}
+          handleLogout={props.handlelogout}/>} />
+        <Route path='/users' element={<Users handleLogout={props.handleLogout} sortedBlogs={props.sortedBlogs}/>} />
+      </Routes>
+    </Router>
+  )
+}
+
+const Home = (props) => {
+  const user = JSON.parse(window.localStorage.getItem('loggedAppUser'))
+
+  return (
+    <div>
+      <h1>blogs</h1>
+      <p>{user.name} logged in</p>
+      <button onClick={props.handleLogout}>logout</button>
+      <p></p>
+      <h2>create new</h2>
+      <Notification />
+      <p></p>
+      <Togglable buttonLabel='new blog' ref={props.blogFormRef}>
+        <BlogForm createBlog={props.addBlog}/>
+      </Togglable>
+      <p></p>
+      {props.sortedBlogs.map(blog =>
+        <Blog
+          key={blog.id}
+          blog={blog}
+          user={user}
+          handleLike={props.handleLike}
+          RemoveButton={props.removeButton}/>
+      )}
+    </div>
+  )
+}
+
+const Users = (props) => {
+  const allUsers = useSelector(state => state.user.allUsers)
+  const user = JSON.parse(window.localStorage.getItem('loggedAppUser'))
+
+  return (
+    <div>
+      <h1>blogs</h1>
+      <p>{user.name} logged in</p>
+      <button onClick={props.handleLogout}>logout</button>
+      <h2>users</h2>
+      <table>
+        <tbody>
+          <tr>
+            <th></th>
+            <th>blogs created</th>
+          </tr>
+          {allUsers.map(user =>
+            <User
+              key={user.id}
+              user={user}/>)}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+const BlogOfUser = ({ user }) => {
+  const blogs = useSelector(state => state.blogs)
+  const id = useParams().id
+  console.log(blogs, id, user)
+}
+
+const User = ({ user }) => {
+  return (
+    <tr>
+      <td><Link> {user.name} <BlogOfUser /></Link></td>
+      <td> {user.blogs.length}</td>
+    </tr>
+  )
+}
 
 const App = () => {
   const [username, setUsername] = useState('')
@@ -26,6 +130,15 @@ const App = () => {
       .getAll()
       .then(blogs => {
         dispatch(setBlogs(blogs))
+      })
+  }, [])
+
+  useEffect(() => {
+    userService
+      .getAll()
+      .then(users => {
+        console.log(users)
+        dispatch(setAllUsers(users))
       })
   }, [])
 
@@ -76,7 +189,8 @@ const App = () => {
 
   const RemoveButton = (blogObject) => {
     const blogAdder = blogObject.blog.user.username
-    const loggedIn = user.username
+    const loggedIn = user.loggedIn.username
+
     if (blogAdder === loggedIn) {
       return (
         <button id="remove-button" onClick={() => handleRemove(blogObject)}> remove </button>
@@ -125,24 +239,13 @@ const App = () => {
 
   return (
     <div>
-      <h1>blogs</h1>
-      <p>{user.name} logged in</p>
-      <button onClick={handleLogout}>logout</button>
-      <h2>create new</h2>
-      <Notification />
-      <p></p>
-      <Togglable buttonLabel='new blog' ref={blogFormRef}>
-        <BlogForm createBlog={addBlog}/>
-      </Togglable>
-      <p></p>
-      {sortedBlogs.map(blog =>
-        <Blog
-          key={blog.id}
-          blog={blog}
-          user={JSON.parse(window.localStorage.getItem('loggedAppUser'))}
-          handleLike={handleLike}
-          RemoveButton={RemoveButton}/>
-      )}
+      <Menu
+        sortedBlogs={sortedBlogs}
+        blogFormRef={blogFormRef}
+        addBlog={addBlog}
+        handleLike={handleLike}
+        removeButton={RemoveButton}
+        handleLogout={handleLogout}/>
     </div>
   )}
 

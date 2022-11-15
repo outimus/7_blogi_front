@@ -15,7 +15,7 @@ const blogSlice = createSlice({
         title: content.title,
         author: content.author,
         url: content.url,
-        userId: content.userId,
+        user: content.userId,
         id: getId(),
         likes: 0
       })
