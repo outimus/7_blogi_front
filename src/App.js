@@ -74,11 +74,13 @@ const App = () => {
       dispatch(setNotification(`A blog ${blogObject.blog.title} by author ${blogObject.blog.author} was removed`, 5))}
   }
 
-  //MITEN REMOVEBUTTONNIN SAA NÄKYMÄÄN VAIN KIRJAUTUNEELLE KÄYTTÄJÄLLE?
   const RemoveButton = (blogObject) => {
-    return (
-      <button id="remove-button" onClick={() => handleRemove(blogObject)}> remove </button>
-    )
+    const blogAdder = blogObject.blog.user.username
+    const loggedIn = user.username
+    if (blogAdder === loggedIn) {
+      return (
+        <button id="remove-button" onClick={() => handleRemove(blogObject)}> remove </button>
+      )}
   }
 
   const addBlog = (blogObject) => {
@@ -124,7 +126,8 @@ const App = () => {
   return (
     <div>
       <h1>blogs</h1>
-      <p>{user.name} logged in  <button onClick={handleLogout}>logout</button></p>
+      <p>{user.name} logged in</p>
+      <button onClick={handleLogout}>logout</button>
       <h2>create new</h2>
       <Notification />
       <p></p>
