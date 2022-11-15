@@ -19,9 +19,6 @@ import {
   BrowserRouter as Router,
   Routes, Route, Link, useParams,
 } from 'react-router-dom'
-/*import { useField, useReset } from './hooks'*/
-
-/*const url = 'http://localhost:3003/api/blogs/'*/
 
 const Menu = (props) => {
   const padding = {
@@ -43,6 +40,7 @@ const Menu = (props) => {
           removeButton={props.removeButton}
           handleLogout={props.handlelogout}/>} />
         <Route path='/users' element={<Users handleLogout={props.handleLogout} sortedBlogs={props.sortedBlogs}/>} />
+        <Route path="/users/:id" element={<BlogsOfUser handleLogout={props.handleLogout} />} />
       </Routes>
     </Router>
   )
@@ -102,16 +100,29 @@ const Users = (props) => {
   )
 }
 
-const BlogOfUser = ({ user }) => {
-  const blogs = useSelector(state => state.blogs)
+const BlogsOfUser = ({ handleLogout }) => {
   const id = useParams().id
-  console.log(blogs, id, user)
+  const loggedIn = useSelector(state => state.user.loggedIn)
+  const allUsers = useSelector(state => state.user.allUsers)
+  const user = allUsers.find(x => x.id === id)
+
+  return (
+    <div>
+      <h1>blogs</h1>
+      <p>{loggedIn.name} logged in</p>
+      <button onClick={handleLogout}>logout</button>
+      <h1>{user.name}</h1>
+      <h2>added blogs</h2>
+      {user.blogs.map(b =>
+        <li key={b.id}> {b.title} </li>)}
+    </div>
+  )
 }
 
 const User = ({ user }) => {
   return (
     <tr>
-      <td><Link> {user.name} <BlogOfUser /></Link></td>
+      <td><Link to={`/users/${user.id}`}> {user.name} </Link></td>
       <td> {user.blogs.length}</td>
     </tr>
   )
