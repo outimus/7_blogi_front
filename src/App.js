@@ -5,6 +5,9 @@ import loginService from './services/login'
 import userService from './services/users'
 
 import Blog from './components/Blog'
+import Users from './components/Users'
+import BlogsOfUser from './components/BlogsOfUser'
+import BlogInfo from './components/BlogInfo'
 import LoginForm from './components/LoginForm'
 import Togglable from './components/Togglable'
 import BlogForm from './components/BlogForm'
@@ -12,48 +15,50 @@ import Notification from './components/Notification'
 
 import { setUser, setAllUsers } from './reducers/userReducer'
 import { setNotification } from './reducers/notificationReducer'
-import { createBlog, setBlogs } from './reducers/blogsReducer'
+import { createBlog, setAllBlogs } from './reducers/blogsReducer'
 
 import { useDispatch, useSelector } from 'react-redux'
 import {
   BrowserRouter as Router,
-  Routes, Route, Link, useParams,
+  Routes, Route, Link,
 } from 'react-router-dom'
 
 const Menu = (props) => {
+  const loggedIn = useSelector(state => state.user.loggedIn.name)
   const padding = {
-    paddingRight: 5
+    padding: 5,
+    color: 'white',
+    backgroundColor: 'grey'
   }
   return (
     <Router>
-      <div>
+      <div style={padding}>
         <p></p>
-        <Link style={padding} to='/'>blogs</Link>
-        <Link style={padding} to='/users'>users</Link>
+        <Link to='/'>blogs  </Link>
+        <Link to='/users'>users  </Link>
+        <>  {loggedIn}  logged in  </>
+        <button onClick={props.handleLogout}> logout </button>
       </div>
+      <h1>blogs</h1>
       <Routes>
         <Route path='/' element={<Home
           blogFormRef={props.blogFormRef}
           addBlog={props.addBlog}
           sortedBlogs={props.sortedBlogs}
-          handleLike={props.handleLike}
+          /*handleLike={props.handleLike}
           removeButton={props.removeButton}
-          handleLogout={props.handlelogout}/>} />
-        <Route path='/users' element={<Users handleLogout={props.handleLogout} sortedBlogs={props.sortedBlogs}/>} />
-        <Route path="/users/:id" element={<BlogsOfUser handleLogout={props.handleLogout} />} />
+          handleLogout={props.handlelogout}*//>} />
+        <Route path='/users' element={<Users sortedBlogs={props.sortedBlogs}/>} />
+        <Route path='/users/:id' element={<BlogsOfUser id={props.id} />} />
+        <Route path='/blogs/:id' element={<BlogInfo />} />
       </Routes>
     </Router>
   )
 }
 
 const Home = (props) => {
-  const user = JSON.parse(window.localStorage.getItem('loggedAppUser'))
-
   return (
     <div>
-      <h1>blogs</h1>
-      <p>{user.name} logged in</p>
-      <button onClick={props.handleLogout}>logout</button>
       <p></p>
       <h2>create new</h2>
       <Notification />
@@ -63,68 +68,11 @@ const Home = (props) => {
       </Togglable>
       <p></p>
       {props.sortedBlogs.map(blog =>
-        <Blog
-          key={blog.id}
-          blog={blog}
-          user={user}
-          handleLike={props.handleLike}
-          RemoveButton={props.removeButton}/>
+        <Link key={blog.id} to={`/blogs/${blog.id}`}>
+          <Blog blog={blog}/>
+        </Link>
       )}
     </div>
-  )
-}
-
-const Users = (props) => {
-  const allUsers = useSelector(state => state.user.allUsers)
-  const user = JSON.parse(window.localStorage.getItem('loggedAppUser'))
-
-  return (
-    <div>
-      <h1>blogs</h1>
-      <p>{user.name} logged in</p>
-      <button onClick={props.handleLogout}>logout</button>
-      <h2>users</h2>
-      <table>
-        <tbody>
-          <tr>
-            <th></th>
-            <th>blogs created</th>
-          </tr>
-          {allUsers.map(user =>
-            <User
-              key={user.id}
-              user={user}/>)}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-const BlogsOfUser = ({ handleLogout }) => {
-  const id = useParams().id
-  const loggedIn = useSelector(state => state.user.loggedIn)
-  const allUsers = useSelector(state => state.user.allUsers)
-  const user = allUsers.find(x => x.id === id)
-
-  return (
-    <div>
-      <h1>blogs</h1>
-      <p>{loggedIn.name} logged in</p>
-      <button onClick={handleLogout}>logout</button>
-      <h1>{user.name}</h1>
-      <h2>added blogs</h2>
-      {user.blogs.map(b =>
-        <li key={b.id}> {b.title} </li>)}
-    </div>
-  )
-}
-
-const User = ({ user }) => {
-  return (
-    <tr>
-      <td><Link to={`/users/${user.id}`}> {user.name} </Link></td>
-      <td> {user.blogs.length}</td>
-    </tr>
   )
 }
 
@@ -133,14 +81,14 @@ const App = () => {
   const [password, setPassword] = useState('')
 
   const dispatch = useDispatch()
-  const blogs = useSelector(state => state.blogs)
+  const blogs = useSelector(state => state.blogs.allBlogs)
   const user = useSelector(state => state.user)
 
   useEffect(() => {
     blogService
       .getAll()
       .then(blogs => {
-        dispatch(setBlogs(blogs))
+        dispatch(setAllBlogs(blogs))
       })
   }, [])
 
@@ -193,7 +141,7 @@ const App = () => {
     if (window.confirm(`Are you sure you want to remove ${blogObject.blog.title} by author ${blogObject.blog.author}?`)) {
       const filtered = blogs.filter(blog => blog.id !== blogObject.blog.id)
       blogService.deleteBlog(blogObject.blog.id)
-      dispatch(setBlogs(filtered))
+      dispatch(setAllBlogs(filtered))
       setUser('')
       dispatch(setNotification(`A blog ${blogObject.blog.title} by author ${blogObject.blog.author} was removed`, 5))}
   }
@@ -220,13 +168,13 @@ const App = () => {
     const blog = blogs.find(b => b.id === id)
     const addLikes = blog.likes + 1
     const updatedInfo = { ...blog, likes: addLikes }
-    dispatch(setBlogs(blogs.map(blog => blog.id !== id ? blog : updatedInfo)))
+    dispatch(setAllBlogs(blogs.map(blog => blog.id !== id ? blog : updatedInfo)))
     dispatch(setNotification(`You liked a blog by author ${blogObject.author}`, 5))
   }
 
   const blogFormRef = useRef()
 
-  if (user === null) {
+  if (user.loggedIn === null) {
     return (
       <div>
         <h2>Login to application</h2>
@@ -244,7 +192,7 @@ const App = () => {
     )
   }
 
-  const sortedBlogs = [...blogs].sort((a,b) => {
+  const sortedBlogs = [...blogs ].sort((a,b) => {
     return b.likes - a.likes
   })
 

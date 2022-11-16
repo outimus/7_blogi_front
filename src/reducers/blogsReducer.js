@@ -7,11 +7,14 @@ const getId = () => {
 
 const blogSlice = createSlice({
   name: 'blogs',
-  initialState: [],
+  initialState: {
+    currentBlog: null,
+    allBlogs: []
+  },
   reducers: {
     appendBlog(state, action) {
       const content = action.payload
-      state.push({
+      state.allBlogs.push({
         title: content.title,
         author: content.author,
         url: content.url,
@@ -20,18 +23,31 @@ const blogSlice = createSlice({
         likes: 0
       })
     },
-    setBlogs(state, action) {
-      return action.payload
+    setAllBlogs(state, action) {
+      console.log('ACTION: ', action)
+      state.allBlogs = action.payload
+      return state
+    },
+    setCurrentBlog(state, action) {
+      console.log('ACTION: ', action)
+      state.currentBlog = action.payload
+      return state
     }
   }
 })
 
-export const { appendBlog, setBlogs } = blogSlice.actions
+export const { appendBlog, setAllBlogs, setCurrentBlog } = blogSlice.actions
 
 // asynkroniset action creatorit
 export const initializeBlogs = (blogs) => {
   return async dispatch => {
-    dispatch(setBlogs(blogs))
+    dispatch(setAllBlogs(blogs))
+  }
+}
+
+export const setCurrent = (blog) => {
+  return async dispatch => {
+    dispatch(setCurrentBlog(blog))
   }
 }
 
