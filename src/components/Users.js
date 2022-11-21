@@ -7,12 +7,18 @@ const Users = () => {
 
   return (
     <div>
-      <h2>users</h2>
+      <div className='flex-gap-container4'>
+        <h2>Users</h2>
+        <div className='flex-gap-container4 flex-gap-item 2'></div>
+        <div className='flex-gap-container4 flex-gap-item 1'></div>
+        <div className='flex-gap-container4 flex-gap-item 2'><h4>blogs created</h4></div>
+      </div>
+      <p></p>
       <table>
         <tbody>
-          <tr>
+          <p></p>
+          <tr className='flex-gap-container3'>
             <th></th>
-            <th>blogs created</th>
           </tr>
           {allUsers.map(user =>
             <User

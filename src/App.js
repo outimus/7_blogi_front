@@ -23,31 +23,25 @@ import {
   Routes, Route, Link,
 } from 'react-router-dom'
 
+
 const Menu = (props) => {
   const loggedIn = useSelector(state => state.user.loggedIn.name)
-  const padding = {
-    padding: 5,
-    color: 'white',
-    backgroundColor: 'grey'
-  }
   return (
     <Router>
-      <div style={padding}>
-        <p></p>
-        <Link to='/'>blogs  </Link>
-        <Link to='/users'>users  </Link>
-        <>  {loggedIn}  logged in  </>
-        <button onClick={props.handleLogout}> logout </button>
+      <div className='flex-gap-container'>
+        <div className='flex-gap-container flex-gap-item 1'><Link to='/'>blogs</Link></div>
+        <div className='flex-gap-container flex-gap-item 2'><Link to='/users'>users</Link></div>
+        <div className='flex-gap-container flex-gap-item 3'>{loggedIn} is logged in</div>
+        <div className='flex-gap-container flex-gap-item 4'><button className='logout-button' onClick={props.handleLogout}> L o g o u t </button></div>
       </div>
-      <h1>blogs</h1>
+      <p></p>
+      <h1>Blogs</h1>
+      <p></p>
       <Routes>
         <Route path='/' element={<Home
           blogFormRef={props.blogFormRef}
           addBlog={props.addBlog}
-          sortedBlogs={props.sortedBlogs}
-          /*handleLike={props.handleLike}
-          removeButton={props.removeButton}
-          handleLogout={props.handlelogout}*//>} />
+          sortedBlogs={props.sortedBlogs}/>} />
         <Route path='/users' element={<Users sortedBlogs={props.sortedBlogs}/>} />
         <Route path='/users/:id' element={<BlogsOfUser id={props.id} />} />
         <Route path='/blogs/:id' element={<BlogInfo />} />
@@ -60,12 +54,15 @@ const Home = (props) => {
   return (
     <div>
       <p></p>
-      <h2>create new</h2>
-      <Notification />
+      <h2>Create a new blog</h2>
       <p></p>
-      <Togglable buttonLabel='new blog' ref={props.blogFormRef}>
-        <BlogForm createBlog={props.addBlog}/>
+      <Togglable buttonLabel='New blog' ref={props.blogFormRef}>
+        <div>
+          <BlogForm createBlog={props.addBlog}/>
+        </div>
       </Togglable>
+      <p></p>
+      <Notification />
       <p></p>
       {props.sortedBlogs.map(blog =>
         <Link key={blog.id} to={`/blogs/${blog.id}`}>
@@ -137,39 +134,11 @@ const App = () => {
     setUser('')
   }
 
-  const handleRemove = (blogObject) => {
-    if (window.confirm(`Are you sure you want to remove ${blogObject.blog.title} by author ${blogObject.blog.author}?`)) {
-      const filtered = blogs.filter(blog => blog.id !== blogObject.blog.id)
-      blogService.deleteBlog(blogObject.blog.id)
-      dispatch(setAllBlogs(filtered))
-      setUser('')
-      dispatch(setNotification(`A blog ${blogObject.blog.title} by author ${blogObject.blog.author} was removed`, 5))}
-  }
-
-  const RemoveButton = (blogObject) => {
-    const blogAdder = blogObject.blog.user.username
-    const loggedIn = user.loggedIn.username
-
-    if (blogAdder === loggedIn) {
-      return (
-        <button id="remove-button" onClick={() => handleRemove(blogObject)}> remove </button>
-      )}
-  }
-
   const addBlog = (blogObject) => {
     blogFormRef.current.toggleVisibility()
     blogService.create(blogObject)
     dispatch(createBlog(blogObject))
     dispatch(setNotification(`A new blog by author ${blogObject.author} was added`, 5))
-  }
-
-  const handleLike = (blogObject) => {
-    const id = blogObject.id
-    const blog = blogs.find(b => b.id === id)
-    const addLikes = blog.likes + 1
-    const updatedInfo = { ...blog, likes: addLikes }
-    dispatch(setAllBlogs(blogs.map(blog => blog.id !== id ? blog : updatedInfo)))
-    dispatch(setNotification(`You liked a blog by author ${blogObject.author}`, 5))
   }
 
   const blogFormRef = useRef()
@@ -197,13 +166,11 @@ const App = () => {
   })
 
   return (
-    <div>
+    <div className='container'>
       <Menu
         sortedBlogs={sortedBlogs}
         blogFormRef={blogFormRef}
         addBlog={addBlog}
-        handleLike={handleLike}
-        removeButton={RemoveButton}
         handleLogout={handleLogout}/>
     </div>
   )}
