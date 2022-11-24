@@ -84,7 +84,7 @@ h5 {
 .flex-gap-container {
   display: grid;
   grid-template-columns: 120px 870px 150px 30px;
-  background: rgb(185, 178, 175);
+  background: rgb(118, 110, 107);
   border-radius: 0px;
   padding: 7px;
   color: rgb(76, 29, 29);
@@ -145,6 +145,13 @@ input[type=text] {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+}
+/*Login -form*/
+.grid-container2 {
+  display: grid;
+  grid-template-columns: 400px;
+  grid-row-gap: 5px;
+  font-family: Georgia, 'Times New Roman', Times, serif;
 }
 
 /*Background color*/

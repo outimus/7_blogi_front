@@ -119,11 +119,11 @@ const App = () => {
       )
       blogService.setToken(user.token)
       dispatch(setUser(user))
-      dispatch(setNotification(`${user.name} is successfully logged in!`, 5))
+      /*dispatch(setNotification(`${user.name} is successfully logged in!`, 5))*/
       setUsername('')
       setPassword('')
     } catch (exception) {
-      dispatch(setNotification('wrong credentials', 5))
+      dispatch(setNotification('Wrong credentials', 5))
     }
   }
 
@@ -147,8 +147,10 @@ const App = () => {
     return (
       <div>
         <h2>Login to application</h2>
+        <p></p>
         <Notification />
-        <Togglable buttonLabel='login'>
+        <p></p>
+        <Togglable buttonLabel='L o g i n'>
           <LoginForm
             username={username}
             password={password}
